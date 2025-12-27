@@ -1,0 +1,14 @@
+streamlit>=1.32.0
+opencv-python-headless
+transformers
+torch
+torchvision
+pillow
+scikit-image
+ultralytics
+numpy
+requests
+pandas
+plotly
+gTTS
+fpdf

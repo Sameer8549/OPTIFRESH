@@ -15,41 +15,72 @@ import requests
 from PIL import Image
 import plotly.graph_objects as go
 from datetime import datetime
+import sys
+import traceback
 
-# Local Engines
-from vision_engine import VisionEngine
-from spoilage_engine import SpoilageEngine
-from recommendation_engine import RecommendationEngine, ReasoningEngine
-from advanced_engines import EconomicsEngine, NutritionEngine, AdvancedFreshnessEngine, LegacyFreshnessEngine
-from verification_engine import WebVerifierEngine
-from segmentation_engine import SegmentationEngine
-from future_engine import FutureEngine
-from impact_engine import ImpactEngine
-from sensory_engine import SensoryEngine
-from macro_engine import MacroEngine
-from holo_engine import HoloEngine
-from logic_engine import LogicEngine
+# Safe import wrapper
+def safe_import(module_name, class_name):
+    try:
+        module = __import__(module_name, fromlist=[class_name])
+        return getattr(module, class_name)
+    except Exception as e:
+        st.error(f"Failed to import {class_name} from {module_name}: {str(e)}")
+        return None
 
-from utils import apply_visual_overlays
+# Try importing local modules with error handling
+try:
+    from vision_engine import VisionEngine
+    from spoilage_engine import SpoilageEngine
+    from recommendation_engine import RecommendationEngine, ReasoningEngine
+    from advanced_engines import EconomicsEngine, NutritionEngine, AdvancedFreshnessEngine, LegacyFreshnessEngine
+    from verification_engine import WebVerifierEngine
+    from segmentation_engine import SegmentationEngine
+    from future_engine import FutureEngine
+    from impact_engine import ImpactEngine
+    from sensory_engine import SensoryEngine
+    from macro_engine import MacroEngine
+    from holo_engine import HoloEngine
+    from logic_engine import LogicEngine
+    from utils import apply_visual_overlays
+except Exception as e:
+    st.error(f"Module import error: {str(e)}")
+    st.code(traceback.format_exc())
+    st.stop()
 
 # Page Config
 st.set_page_config(page_title="OPTIFRESH", layout="wide", page_icon="🌿")
 
+# Health check - ensure app is responsive
+if 'app_started' not in st.session_state:
+    st.session_state.app_started = True
+
 # Initialize Engines (Lazy Loading with Caching)
 @st.cache_resource
 def load_vision_engine():
-    return VisionEngine()
+    try:
+        return VisionEngine()
+    except Exception as e:
+        st.error(f"Vision engine failed: {str(e)}")
+        return None
 
 @st.cache_resource
 def load_spoilage_engine():
-    return SpoilageEngine()
+    try:
+        return SpoilageEngine()
+    except Exception as e:
+        st.error(f"Spoilage engine failed: {str(e)}")
+        return None
 
 @st.cache_resource
 def load_other_engines():
-    return (EconomicsEngine(), NutritionEngine(), RecommendationEngine(), 
-            ReasoningEngine(), AdvancedFreshnessEngine(), LegacyFreshnessEngine(),
-            WebVerifierEngine(), SegmentationEngine(), FutureEngine(), 
-            ImpactEngine(), SensoryEngine(), MacroEngine(), HoloEngine(), LogicEngine())
+    try:
+        return (EconomicsEngine(), NutritionEngine(), RecommendationEngine(), 
+                ReasoningEngine(), AdvancedFreshnessEngine(), LegacyFreshnessEngine(),
+                WebVerifierEngine(), SegmentationEngine(), FutureEngine(), 
+                ImpactEngine(), SensoryEngine(), MacroEngine(), HoloEngine(), LogicEngine())
+    except Exception as e:
+        st.error(f"Other engines failed: {str(e)}")
+        return tuple([None] * 14)
 
 # Engines will be loaded on-demand
 vision = None

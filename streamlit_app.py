@@ -15,90 +15,41 @@ import requests
 from PIL import Image
 import plotly.graph_objects as go
 from datetime import datetime
-import sys
-import traceback
-
-# Safe import wrapper
-def safe_import(module_name, class_name):
-    try:
-        module = __import__(module_name, fromlist=[class_name])
-        return getattr(module, class_name)
-    except Exception as e:
-        st.error(f"Failed to import {class_name} from {module_name}: {str(e)}")
-        return None
-
-# Try importing local modules with error handling
-try:
-    from vision_engine import VisionEngine
-    from spoilage_engine import SpoilageEngine
-    from recommendation_engine import RecommendationEngine, ReasoningEngine
-    from advanced_engines import EconomicsEngine, NutritionEngine, AdvancedFreshnessEngine, LegacyFreshnessEngine
-    from verification_engine import WebVerifierEngine
-    from segmentation_engine import SegmentationEngine
-    from future_engine import FutureEngine
-    from impact_engine import ImpactEngine
-    from sensory_engine import SensoryEngine
-    from macro_engine import MacroEngine
-    from holo_engine import HoloEngine
-    from logic_engine import LogicEngine
-    from utils import apply_visual_overlays
-except Exception as e:
-    st.error(f"Module import error: {str(e)}")
-    st.code(traceback.format_exc())
-    st.stop()
+# Import local modules
+from vision_engine import VisionEngine
+from spoilage_engine import SpoilageEngine
+from recommendation_engine import RecommendationEngine, ReasoningEngine
+from advanced_engines import EconomicsEngine, NutritionEngine, AdvancedFreshnessEngine, LegacyFreshnessEngine
+from verification_engine import WebVerifierEngine
+from segmentation_engine import SegmentationEngine
+from future_engine import FutureEngine
+from impact_engine import ImpactEngine
+from sensory_engine import SensoryEngine
+from macro_engine import MacroEngine
+from holo_engine import HoloEngine
+from logic_engine import LogicEngine
+from utils import apply_visual_overlays
 
 # Page Config
 st.set_page_config(page_title="OPTIFRESH", layout="wide", page_icon="🌿")
 
-# Health check - ensure app is responsive
-if 'app_started' not in st.session_state:
-    st.session_state.app_started = True
-
-# Initialize Engines (Lazy Loading with Caching)
-@st.cache_resource
-def load_vision_engine():
-    try:
-        return VisionEngine()
-    except Exception as e:
-        st.error(f"Vision engine failed: {str(e)}")
-        return None
-
-@st.cache_resource
-def load_spoilage_engine():
-    try:
-        return SpoilageEngine()
-    except Exception as e:
-        st.error(f"Spoilage engine failed: {str(e)}")
-        return None
-
-@st.cache_resource
-def load_other_engines():
-    try:
-        return (EconomicsEngine(), NutritionEngine(), RecommendationEngine(), 
-                ReasoningEngine(), AdvancedFreshnessEngine(), LegacyFreshnessEngine(),
-                WebVerifierEngine(), SegmentationEngine(), FutureEngine(), 
-                ImpactEngine(), SensoryEngine(), MacroEngine(), HoloEngine(), LogicEngine())
-    except Exception as e:
-        st.error(f"Other engines failed: {str(e)}")
-        return tuple([None] * 14)
-
-# Engines will be loaded on-demand
-vision = None
-spoilage = None
-economics = None
-nutrition = None
-recommender = None
-reasoner = None
-advanced_engine = None
-legacy_engine = None
-web_verifier = None
-segmentation = None
-future_engine = None
-impact_engine = None
-sensory_engine = None
-macro_engine = None
-holo_engine = None
-logic_engine = None
+# Initialize Engines
+vision = VisionEngine()
+spoilage = SpoilageEngine()
+economics = EconomicsEngine()
+nutrition = NutritionEngine()
+recommender = RecommendationEngine()
+reasoner = ReasoningEngine()
+advanced_engine = AdvancedFreshnessEngine()
+legacy_engine = LegacyFreshnessEngine()
+web_verifier = WebVerifierEngine()
+segmentation = SegmentationEngine()
+future_engine = FutureEngine()
+impact_engine = ImpactEngine()
+sensory_engine = SensoryEngine()
+macro_engine = MacroEngine()
+holo_engine = HoloEngine()
+logic_engine = LogicEngine()
 
 # --- HYPER-LOCAL UTILS ---
 def get_weather(lat, lon):
@@ -312,11 +263,6 @@ with tabs[0]:
     if uploaded_file:
         image = Image.open(uploaded_file)
         img_bgr = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-
-        # Load engines on-demand
-        vision = load_vision_engine()
-        spoilage = load_spoilage_engine()
-        economics, nutrition, recommender, reasoner, advanced_engine, legacy_engine, web_verifier, segmentation, future_engine, impact_engine, sensory_engine, macro_engine, holo_engine, logic_engine = load_other_engines()
 
         with st.status("⚡ Checking freshness...", expanded=True) as status:
             st.write("🔍 Identifying item...")

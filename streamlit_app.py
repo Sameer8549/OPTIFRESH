@@ -35,14 +35,39 @@ from utils import apply_visual_overlays
 # Page Config
 st.set_page_config(page_title="OPTIFRESH", layout="wide", page_icon="🌿")
 
-# Initialize Engines (Cached for performance)
-# Initialize Engines (Cache Disabled for Debugging)
-# @st.cache_resource -> Disabled to force new instance
-def load_engines_debug():
-    return VisionEngine(), SpoilageEngine(), EconomicsEngine(), NutritionEngine(), RecommendationEngine(), ReasoningEngine(), AdvancedFreshnessEngine(), LegacyFreshnessEngine(), WebVerifierEngine(), SegmentationEngine(), FutureEngine(), ImpactEngine(), SensoryEngine(), MacroEngine(), HoloEngine(), LogicEngine()
+# Initialize Engines (Lazy Loading with Caching)
+@st.cache_resource
+def load_vision_engine():
+    return VisionEngine()
 
-vision, spoilage, economics, nutrition, recommender, reasoner, advanced_engine, legacy_engine, web_verifier, segmentation, future_engine, impact_engine, sensory_engine, macro_engine, holo_engine, logic_engine = load_engines_debug()
-print("System Engines Loaded Successfully.")
+@st.cache_resource
+def load_spoilage_engine():
+    return SpoilageEngine()
+
+@st.cache_resource
+def load_other_engines():
+    return (EconomicsEngine(), NutritionEngine(), RecommendationEngine(), 
+            ReasoningEngine(), AdvancedFreshnessEngine(), LegacyFreshnessEngine(),
+            WebVerifierEngine(), SegmentationEngine(), FutureEngine(), 
+            ImpactEngine(), SensoryEngine(), MacroEngine(), HoloEngine(), LogicEngine())
+
+# Engines will be loaded on-demand
+vision = None
+spoilage = None
+economics = None
+nutrition = None
+recommender = None
+reasoner = None
+advanced_engine = None
+legacy_engine = None
+web_verifier = None
+segmentation = None
+future_engine = None
+impact_engine = None
+sensory_engine = None
+macro_engine = None
+holo_engine = None
+logic_engine = None
 
 # --- HYPER-LOCAL UTILS ---
 def get_weather(lat, lon):
@@ -256,6 +281,11 @@ with tabs[0]:
     if uploaded_file:
         image = Image.open(uploaded_file)
         img_bgr = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+
+        # Load engines on-demand
+        vision = load_vision_engine()
+        spoilage = load_spoilage_engine()
+        economics, nutrition, recommender, reasoner, advanced_engine, legacy_engine, web_verifier, segmentation, future_engine, impact_engine, sensory_engine, macro_engine, holo_engine, logic_engine = load_other_engines()
 
         with st.status("⚡ Checking freshness...", expanded=True) as status:
             st.write("🔍 Identifying item...")

@@ -66,7 +66,7 @@ pip install -r requirements.txt
 python -m venv .venv && .venv\\Scripts\\activate
 
 # 4️⃣ Launch the app
-streamlit run app.py
+streamlit run streamlit_app.py
 ```
 
 > **Tip:** Use the provided `run_optifresh.bat` (generated automatically) to perform the above steps with a single double‑click.
